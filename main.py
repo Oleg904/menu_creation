@@ -17,12 +17,12 @@ sheet2 = wb2.active
 def main_window():
     def open_file():
         filedialog.askopenfile()
-    def secondary_window():
-        window = Tk()
-        window.title("Информация")
-        window.geometry("450x80")
-        label = ttk.Label(text="Просто", font=("Arial", 13))
-        label.pack()
+    # def secondary_window():
+    #     window = Tk()
+    #     window.title("Информация")
+    #     window.geometry("450x80")
+    #     label = ttk.Label(text="Просто", font=("Arial", 13))
+    #     label.pack()
 
     def finish():
         root.destroy()  # ручное закрытие окна и всего приложения
