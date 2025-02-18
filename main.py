@@ -6,6 +6,7 @@ from tkinter import filedialog
 from tkinter.messagebox import showerror, showwarning, showinfo
 
 
+
 home_dir = os.path.expanduser("~")
 
 if not os.path.exists(f"{home_dir}/Desktop/Менюшки"):
@@ -15,8 +16,17 @@ wb2 = load_workbook("shablon.xlsx")
 sheet2 = wb2.active
 
 def main_window():
+    # открытие файла типового меню
     def open_file():
-        filedialog.askopenfile()
+        # file_menu = filedialog.askopenfile(filetypes=(("EXCEL", ".xlsx"),))
+        global file_menu
+        global  wb
+        global sheet
+        file_menu = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
+        wb = load_workbook(file_menu, read_only=True)
+        sheet = wb.active
+        showinfo(title="Информация", message=sheet["A6"].value)
+
     # def secondary_window():
     #     window = Tk()
     #     window.title("Информация")
@@ -25,6 +35,8 @@ def main_window():
     #     label.pack()
 
     def finish():
+        print(sheet["A6"].value)
+        wb.close()
         root.destroy()  # ручное закрытие окна и всего приложения
 
     # создается главное окно
@@ -32,16 +44,20 @@ def main_window():
     root.title("Создание меню")
     root.geometry("450x400")
 
-    btn = ttk.Button(text="Выберете файл типового меню", command=open_file)
-    btn.pack(padx=100, pady=150, ipadx=10, ipady=10)
+    # вывод текста в основном окне
+    label = ttk.Label(root, text="Выберете файл типового меню", font=("Arial", 15))
+    label.pack(padx=50, pady=60)
+
+    # создание кнопки
+    btn = ttk.Button(text="Выбрать", command=open_file)
+    btn.pack(side=TOP, pady=30, ipadx=27, ipady=7)
+
 
     root.resizable(False, False)  # запрет изменения размеров окна
 
     root.protocol("WM_DELETE_WINDOW", finish)
 
     root.mainloop()
-
-main_window()
 
 # print(os.path.exists(f"{home_dir}/Desktop/Меню"))
 # print(os.path.isfile(f"{home_dir}/Desktop/Меню/Пример.xlsx"))
@@ -58,3 +74,4 @@ def menu_processing():
     else:
         showinfo(title="Информация", message="Файлы меню созданы на Рабочем столе в папке Менюшки")
 
+main_window()
