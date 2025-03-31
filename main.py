@@ -35,7 +35,7 @@ def main_window():
 
     # вывод текста в основном окне
     label = ttk.Label(root, text="Выберете файл типового меню", font=("Arial", 15))
-    label.place(relx= 0.5, rely= 0.1, anchor=CENTER)
+    label.place(relx= 0.5, rely= 0.2, anchor=CENTER)
 
 
     # создание кнопки
