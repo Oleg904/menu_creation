@@ -16,9 +16,6 @@ num_week_day = 6    # начальная строка для определен�
 
 file_menu = ''      # путь к файлу типового меню
 
-if not os.path.exists(f"{home_dir}/Desktop/Менюшки"):
-    os.mkdir(f"{home_dir}/Desktop/Менюшки")
-
 def main_window():
     # открытие файла типового меню
     def open_file():
@@ -97,6 +94,8 @@ def cycle(row_of_sheet, sheet, sheet2):
 
 def menu_processing():
     try:  # проверка на наличие
+        if not os.path.exists(f"{home_dir}/Desktop/Менюшки"):   # проверка наличия папки с ежедневными меню и создание в случае отсутствия
+            os.mkdir(f"{home_dir}/Desktop/Менюшки")
         if len(os.listdir(f"{home_dir}/Desktop/Менюшки")) == 0:
             workbook = load_workbook(file_menu, read_only=True)     # выбор файла типового меню
             sheet = workbook.active     # выбор активного листа
