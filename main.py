@@ -50,7 +50,7 @@ def main_window():
 
     root.protocol("WM_DELETE_WINDOW", finish)
 
-    root.iconbitmap('image.ico')
+    root.iconbitmap('files/image.ico')
 
     root.mainloop()
 
@@ -114,7 +114,7 @@ def menu_processing():
                     current_date += datetime.timedelta(2)
                 elif current_date.isoweekday() == 7 and day_of_week != 7:    # если день выпадает на воскресенье
                     current_date += datetime.timedelta(1)
-                workbook2 = load_workbook("shablon.xlsx")   # открытие шаблона
+                workbook2 = load_workbook("files/shablon.xlsx")   # открытие шаблона
                 sheet2 = workbook2.active     # выбор активного листа
                 sheet2.cell(row=1, column=2).value = school_name    # вставка наименования учреждения в ежедневное меню
                 sheet2.cell(row=1, column=10).value = current_date.strftime("%d.%m.%Y") # вставка даты в ежедневное меню
@@ -135,6 +135,10 @@ def menu_processing():
     except BaseException as errors:
         if 'WinError 32' in str(errors):
             showinfo(title="Информация", message="Закройте файл меню и заново выберите файл типового меню.")
+        elif sheet.cell(row=3,column=10).value == None:
+            showinfo(title="Информация", message="Не заполнена дата в типовом меню, пожалуйста заполните.")
+        elif ValueError:
+            showinfo(title="Информация", message="В типовом меню введена некорректная дата. Пожалуйста, скорректируйте дату.")
         else:
             showinfo(title="Информация", message=str(errors))
 
