@@ -14,14 +14,30 @@ start_date = []     # дата начала действия типового м
 
 num_week_day = 6    # начальная строка для определения недели и дня недели
 
+nutrition_calendar = ''     # путь к файлу календаря питания
+
 file_menu = ''      # путь к файлу типового меню
 
+how_day_menu = 0    # сколькидневное меню
+
 def main_window():
+    # открытие файла календаря питания
+    def open_file_calendar():
+        global nutrition_calendar
+        nutrition_calendar = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
+        if nutrition_calendar != '':
+            showinfo(title="Информация", message="Теперь выберите типовое меню.")
+        else:
+            showinfo(title="Информация", message="Вы не выбрали календарь питания. Выберите его заново.")
+
     # открытие файла типового меню
-    def open_file():
+    def open_file_menu():
         global file_menu
         file_menu = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
-        menu_processing()
+        if nutrition_calendar == '':
+            showinfo(title="Информация", message="Вы не выбрали календарь питания. Сначала выберите его, а затем заново файл типового меню.")
+        else:
+            menu_processing()
 
     def finish():  # закрытие окна
         root.destroy()  # ручное закрытие окна и всего приложения
@@ -32,12 +48,16 @@ def main_window():
     root.geometry("500x450")
 
     # вывод текста в основном окне
-    label = ttk.Label(root, text="Выберете файл типового меню", font=("Arial", 15))
+    label = ttk.Label(root, text="Выберете календарь питания, \nа затем файл типового меню", font=("Arial", 16))
     label.place(relx= 0.5, rely= 0.2, anchor=CENTER)
 
-    # создание кнопки
-    btn = ttk.Button(text="Выбрать меню", command=open_file)
-    btn.place(relx= 0.5, rely= 0.4,height=40, width=180, anchor=CENTER)
+    # создание кнопки выбора типового меню
+    btn = ttk.Button(text="Выбрать меню", command=open_file_menu)
+    btn.place(relx= 0.5, rely= 0.5,height=40, width=180, anchor=CENTER)
+
+    # создание кнопки выбора календаря питания
+    btn2 = ttk.Button(text="Выбрать календарь питания", command=open_file_calendar)
+    btn2.place(relx= 0.5, rely= 0.35,height=40, width=180, anchor=CENTER)
 
     label2 = ttk.Label(root, text="Создание файлов может занять до одной минуты.\nПрограмма сообщит, когда закончит.\nПо завершении, меню создадуться на Рабочем столе в папке 'Менюшки'",foreground="#126b62", font=("Arial", 10))
     label2.place(relx= 0.5, rely= 0.7, anchor=CENTER)
@@ -53,6 +73,9 @@ def main_window():
     root.iconbitmap('files/image.ico')
 
     root.mainloop()
+
+def how_much_is_the_daily_menu():   # определение сколько дней в меню
+    pass
 
 def cycle(row_of_sheet, sheet, sheet2):
     row_day_menu = 4    # строка начала вставки в ежедневное меню
@@ -99,14 +122,17 @@ def menu_processing():
         if len(os.listdir(f"{home_dir}/Desktop/Менюшки")) == 0:
             workbook = load_workbook(file_menu, read_only=True)     # выбор файла типового меню
             sheet = workbook.active     # выбор активного листа
+            workbook3 = load_workbook(file_menu, read_only=True)  # выбор календаря
+            sheet3 = workbook3.active  # выбор активного листа в календаре
             # наименование учреждения
             school_name = sheet.cell(row=1,column=3).value
             # составление даты начала
-            start_date.append(sheet.cell(row=3,column=10).value)
-            start_date.append(sheet.cell(row=3,column=9).value)
-            start_date.append(sheet.cell(row=3,column=8).value)
+            start_date.append(sheet.cell(row=3,column=10).value)     # год
+            start_date.append(sheet.cell(row=3,column=9).value)     # месяц
+            start_date.append(sheet.cell(row=3,column=8).value)     # день
             date = datetime.date(*start_date)
             current_date = date     # текущая дата меню
+            print(type(current_date.day))
             while True:
                 week = sheet.cell(row=num_week_day,column=1).value
                 day_of_week = sheet.cell(row=num_week_day,column=2).value
