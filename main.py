@@ -10,8 +10,6 @@ from tkinter.messagebox import showinfo
 
 home_dir = os.path.expanduser("~")
 
-start_date = []     # дата начала действия типового меню
-
 num_week_day = 6    # начальная строка для определения недели и дня недели
 
 nutrition_calendar = ''     # путь к файлу календаря питания
@@ -25,6 +23,10 @@ def main_window():
     def open_file_calendar():
         global nutrition_calendar
         nutrition_calendar = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
+        workbook3 = load_workbook(nutrition_calendar, read_only=True)  # выбор календаря
+        sheet3 = workbook3.active  # выбор активного листа в календаре
+        how_much_is_the_daily_menu(sheet3)
+        workbook3.close()
         if nutrition_calendar != '':
             showinfo(title="Информация", message="Теперь выберите типовое меню.")
         else:
@@ -74,8 +76,23 @@ def main_window():
 
     root.mainloop()
 
-def how_much_is_the_daily_menu():   # определение сколько дней в меню
-    pass
+def how_much_is_the_daily_menu(sheet):   # определение сколько дней в меню
+    start_reding = 4  # строка начала считывания дней в календаре
+    read_column = 2 # столбец начала считывания
+    global how_day_menu
+    while True:
+        while True:
+            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value > how_day_menu:
+                how_day_menu = sheet.cell(row=start_reding, column=read_column).value
+            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value < how_day_menu:
+                break
+            if read_column == 32:
+                break
+            read_column += 1
+        if start_reding == 13:
+            break
+        start_reding += 1
+        read_column = 2
 
 def cycle(row_of_sheet, sheet, sheet2):
     row_day_menu = 4    # строка начала вставки в ежедневное меню
@@ -117,13 +134,12 @@ def cycle(row_of_sheet, sheet, sheet2):
 
 def menu_processing():
     try:  # проверка на наличие
+        start_date = []  # дата начала действия типового меню
         if not os.path.exists(f"{home_dir}/Desktop/Менюшки"):   # проверка наличия папки с ежедневными меню и создание в случае отсутствия
             os.mkdir(f"{home_dir}/Desktop/Менюшки")
         if len(os.listdir(f"{home_dir}/Desktop/Менюшки")) == 0:
             workbook = load_workbook(file_menu, read_only=True)     # выбор файла типового меню
             sheet = workbook.active     # выбор активного листа
-            workbook3 = load_workbook(file_menu, read_only=True)  # выбор календаря
-            sheet3 = workbook3.active  # выбор активного листа в календаре
             # наименование учреждения
             school_name = sheet.cell(row=1,column=3).value
             # составление даты начала
@@ -132,7 +148,6 @@ def menu_processing():
             start_date.append(sheet.cell(row=3,column=8).value)     # день
             date = datetime.date(*start_date)
             current_date = date     # текущая дата меню
-            print(type(current_date.day))
             while True:
                 week = sheet.cell(row=num_week_day,column=1).value
                 day_of_week = sheet.cell(row=num_week_day,column=2).value
@@ -151,6 +166,8 @@ def menu_processing():
                     break
             workbook.close()
             showinfo(title="Информация", message="Файлы меню созданы. При необходимости, скорректируйте даты на ежедневных меню. Программу можно закрыть.")
+            global nutrition_calendar
+            nutrition_calendar = ''
         elif file_menu == '':
             showinfo(title="Информация", message="Вы не выбрали файл типового меню, выберите его снова.")
         else:
@@ -161,9 +178,11 @@ def menu_processing():
     except BaseException as errors:
         if 'WinError 32' in str(errors):
             showinfo(title="Информация", message="Закройте файл меню и заново выберите файл типового меню.")
-        elif sheet.cell(row=3,column=10).value == None:
+        elif sheet.cell(row=3,column=10).value is None or sheet.cell(row=3,column=9).value is None or sheet.cell(row=3,column=8).value is None:
+            workbook.close()
             showinfo(title="Информация", message="Не заполнена дата в типовом меню, пожалуйста заполните.")
         elif ValueError:
+            print(errors)
             showinfo(title="Информация", message="В типовом меню введена некорректная дата. Пожалуйста, скорректируйте дату.")
         else:
             showinfo(title="Информация", message=str(errors))
