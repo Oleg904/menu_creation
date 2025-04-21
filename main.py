@@ -1,6 +1,8 @@
 import os
 import datetime
 import shutil
+from os import close
+
 from openpyxl import load_workbook
 from tkinter import *
 from tkinter import ttk
@@ -16,11 +18,12 @@ nutrition_calendar = ''     # путь к файлу календаря пита
 
 file_menu = ''      # путь к файлу типового меню
 
+dates_day_menu = {}     # дни меню с соответствующими им датами
+
 how_day_menu = 0    # сколькидневное меню
 
 def main_window():
-    # открытие файла календаря питания
-    def open_file_calendar():
+    def open_file_calendar():   # открытие файла календаря питания
         global nutrition_calendar
         nutrition_calendar = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
         workbook3 = load_workbook(nutrition_calendar, read_only=True)  # выбор календаря
@@ -94,7 +97,14 @@ def how_much_is_the_daily_menu(sheet):   # определение сколько
         start_reding += 1
         read_column = 2
 
-def cycle(row_of_sheet, sheet, sheet2):
+def dates_menu(day, month, year):   # составление списка дней меню с соответствующими им датами
+    global dates_day_menu
+    workbook3 = load_workbook(nutrition_calendar, read_only=True)
+    sheet3 = workbook3.active
+    workbook3.close()
+
+
+def cycle(row_of_sheet, sheet, sheet2):     # функция вставки ячеек в ежедневные меню
     row_day_menu = 4    # строка начала вставки в ежедневное меню
     while True:
         if str(sheet.cell(row=row_of_sheet, column=4).value) == "Итого" or str(sheet.cell(row=row_of_sheet, column=4).value) == "итого":     # пропуск строки Итого
@@ -148,6 +158,9 @@ def menu_processing():
             start_date.append(sheet.cell(row=3,column=8).value)     # день
             date = datetime.date(*start_date)
             current_date = date     # текущая дата меню
+            dates_menu(start_date[2], start_date[1], start_date[0])
+
+
             while True:
                 week = sheet.cell(row=num_week_day,column=1).value
                 day_of_week = sheet.cell(row=num_week_day,column=2).value
@@ -166,8 +179,6 @@ def menu_processing():
                     break
             workbook.close()
             showinfo(title="Информация", message="Файлы меню созданы. При необходимости, скорректируйте даты на ежедневных меню. Программу можно закрыть.")
-            global nutrition_calendar
-            nutrition_calendar = ''
         elif file_menu == '':
             showinfo(title="Информация", message="Вы не выбрали файл типового меню, выберите его снова.")
         else:
@@ -178,13 +189,11 @@ def menu_processing():
     except BaseException as errors:
         if 'WinError 32' in str(errors):
             showinfo(title="Информация", message="Закройте файл меню и заново выберите файл типового меню.")
-        elif sheet.cell(row=3,column=10).value is None or sheet.cell(row=3,column=9).value is None or sheet.cell(row=3,column=8).value is None:
-            workbook.close()
-            showinfo(title="Информация", message="Не заполнена дата в типовом меню, пожалуйста заполните.")
         elif ValueError:
-            print(errors)
-            showinfo(title="Информация", message="В типовом меню введена некорректная дата. Пожалуйста, скорректируйте дату.")
+            showinfo(title="Информация", message="В типовом меню не заполнена или введена некорректная дата. Пожалуйста, скорректируйте дату.")
+            workbook.close()
         else:
             showinfo(title="Информация", message=str(errors))
+
 
 main_window()
