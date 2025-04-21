@@ -103,7 +103,6 @@ def dates_menu(day, month, year):   # составление списка дне
     sheet3 = workbook3.active
     workbook3.close()
 
-
 def cycle(row_of_sheet, sheet, sheet2):     # функция вставки ячеек в ежедневные меню
     row_day_menu = 4    # строка начала вставки в ежедневное меню
     while True:
