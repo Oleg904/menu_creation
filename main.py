@@ -101,6 +101,37 @@ def dates_menu(day, month, year):   # составление списка дне
     global dates_day_menu
     workbook3 = load_workbook(nutrition_calendar, read_only=True)
     sheet3 = workbook3.active
+    while True:
+        if month < 7:
+            if sheet3.cell(row=month+3,column=day+1).value is not None and day <= 31:
+                date_menu = [year, month, day]  # дата из календаря
+                dates_day_menu.setdefault(sheet3.cell(row=month+3,column=day+1).value, [])
+                date_of_month = datetime.date(*date_menu)
+                dates_day_menu[sheet3.cell(row=month+3,column=day+1).value].append(date_of_month.strftime("%Y-%m-%d"))
+                day += 1
+            elif sheet3.cell(row=month+3,column=day+1).value is None and day <=31:
+                day += 1
+            if day == 32:
+                day = 1
+                month += 1
+            if month == 6 and day == 1:
+                break
+        else:
+            if sheet3.cell(row=month+1,column=day+1).value is not None and day <= 31:
+                date_menu = [year, month, day]  # дата из календаря
+                dates_day_menu.setdefault(sheet3.cell(row=month+1,column=day+1).value, [])
+                date_of_month = datetime.date(*date_menu)
+                dates_day_menu[sheet3.cell(row=month+1,column=day+1).value].append(date_of_month.strftime("%Y-%m-%d"))
+                day += 1
+
+            elif sheet3.cell(row=month+1,column=day+1).value is None and day <=31:
+                day += 1
+            if day == 32:
+                day = 1
+                month += 1
+            if month == 13 and day == 1:
+                break
+    print(dates_day_menu)
     workbook3.close()
 
 def cycle(row_of_sheet, sheet, sheet2):     # функция вставки ячеек в ежедневные меню
@@ -141,6 +172,25 @@ def cycle(row_of_sheet, sheet, sheet2):     # функция вставки яч
             row_day_menu += 1
             row_of_sheet += 1
 
+def menu_creation_cycle(school_name, current_date, sheet):  # цикл записи ежедневных меню
+    while True:
+        week = sheet.cell(row=num_week_day, column=1).value
+        day_of_week = sheet.cell(row=num_week_day, column=2).value
+        if current_date.isoweekday() == 6 and day_of_week != 6:  # если день выпадает на субботу
+            current_date += datetime.timedelta(2)
+        elif current_date.isoweekday() == 7 and day_of_week != 7:  # если день выпадает на воскресенье
+            current_date += datetime.timedelta(1)
+        workbook2 = load_workbook("files/shablon.xlsx")  # открытие шаблона
+        sheet2 = workbook2.active  # выбор активного листа
+        sheet2.cell(row=1, column=2).value = school_name  # вставка наименования учреждения в ежедневное меню
+        sheet2.cell(row=1, column=10).value = current_date.strftime("%d.%m.%Y")  # вставка даты в ежедневное меню
+        cycle(num_week_day, sheet, sheet2)
+        workbook2.save(
+            f"{home_dir}/Desktop/Менюшки/{current_date.strftime("%Y-%m-%d")}-sm.xlsx")  # сохранение файла ежедневного меню
+        current_date += datetime.timedelta(1)  # прибавление одних суток к дате
+        if week * day_of_week == 10:  # завершение цикла после десятого дня
+            break
+
 def menu_processing():
     try:  # проверка на наличие
         start_date = []  # дата начала действия типового меню
@@ -158,24 +208,7 @@ def menu_processing():
             date = datetime.date(*start_date)
             current_date = date     # текущая дата меню
             dates_menu(start_date[2], start_date[1], start_date[0])
-
-
-            while True:
-                week = sheet.cell(row=num_week_day,column=1).value
-                day_of_week = sheet.cell(row=num_week_day,column=2).value
-                if current_date.isoweekday() == 6 and day_of_week != 6:      # если день выпадает на субботу
-                    current_date += datetime.timedelta(2)
-                elif current_date.isoweekday() == 7 and day_of_week != 7:    # если день выпадает на воскресенье
-                    current_date += datetime.timedelta(1)
-                workbook2 = load_workbook("files/shablon.xlsx")   # открытие шаблона
-                sheet2 = workbook2.active     # выбор активного листа
-                sheet2.cell(row=1, column=2).value = school_name    # вставка наименования учреждения в ежедневное меню
-                sheet2.cell(row=1, column=10).value = current_date.strftime("%d.%m.%Y") # вставка даты в ежедневное меню
-                cycle(num_week_day, sheet, sheet2)
-                workbook2.save(f"{home_dir}/Desktop/Менюшки/{current_date.strftime("%Y-%m-%d")}-sm.xlsx")  # сохранение файла ежедневного меню
-                current_date += datetime.timedelta(1)   # прибавление одних суток к дате
-                if week * day_of_week == 10:      # завершение цикла после десятого дня
-                    break
+            menu_creation_cycle(school_name, current_date, sheet)
             workbook.close()
             showinfo(title="Информация", message="Файлы меню созданы. При необходимости, скорректируйте даты на ежедневных меню. Программу можно закрыть.")
         elif file_menu == '':
@@ -195,4 +228,20 @@ def menu_processing():
             showinfo(title="Информация", message=str(errors))
 
 
+
 main_window()
+
+
+# import datetime
+# slovarik = {}
+# start_date = [2025, 4, 7]
+#
+# date = datetime.date(*start_date)
+# slovarik.setdefault(1, [])
+# print(slovarik)
+# slovarik[1].append(date)
+# slovarik[1].append('sthytu')
+# print(slovarik)
+# print(type(slovarik.get(1)[0]))
+
+
