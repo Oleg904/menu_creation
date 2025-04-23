@@ -1,7 +1,6 @@
 import os
 import datetime
 import shutil
-from os import close
 
 from openpyxl import load_workbook
 from tkinter import *
@@ -15,6 +14,8 @@ home_dir = os.path.expanduser("~")
 num_week_day = 6    # начальная строка для определения недели и дня недели
 
 nutrition_calendar = ''     # путь к файлу календаря питания
+
+month_increase = 0   # прибавление для считывания месяца
 
 file_menu = ''      # путь к файлу типового меню
 
@@ -64,7 +65,7 @@ def main_window():
     btn2 = ttk.Button(text="Выбрать календарь питания", command=open_file_calendar)
     btn2.place(relx= 0.5, rely= 0.35,height=40, width=180, anchor=CENTER)
 
-    label2 = ttk.Label(root, text="Создание файлов может занять до одной минуты.\nПрограмма сообщит, когда закончит.\nПо завершении, меню создадуться на Рабочем столе в папке 'Менюшки'",foreground="#126b62", font=("Arial", 10))
+    label2 = ttk.Label(root, text="Создание файлов может занять до одной минуты.\nПрограмма сообщит, когда закончит.\nПо завершении, меню создадутся на Рабочем столе в папке 'Менюшки'",foreground="#126b62", font=("Arial", 10))
     label2.place(relx= 0.5, rely= 0.7, anchor=CENTER)
 
     # подпись внизу главного окна
@@ -99,39 +100,34 @@ def how_much_is_the_daily_menu(sheet):   # определение сколько
 
 def dates_menu(day, month, year):   # составление списка дней меню с соответствующими им датами
     global dates_day_menu
+    global month_increase
+    dates_day_menu = {}
     workbook3 = load_workbook(nutrition_calendar, read_only=True)
     sheet3 = workbook3.active
+    if month < 6:
+        month_increase = 3
+    elif month > 6 and sheet3.cell(row=9,column=1).value == 'июнь':
+        month_increase = 1
+    elif month > 6 and sheet3.cell(row=9,column=1).value != 'июнь' and month == 8:
+        month_increase = 0
+        month = 9
+        day = 1
     while True:
-        if month < 7:
-            if sheet3.cell(row=month+3,column=day+1).value is not None and day <= 31:
-                date_menu = [year, month, day]  # дата из календаря
-                dates_day_menu.setdefault(sheet3.cell(row=month+3,column=day+1).value, [])
-                date_of_month = datetime.date(*date_menu)
-                dates_day_menu[sheet3.cell(row=month+3,column=day+1).value].append(date_of_month.strftime("%Y-%m-%d"))
-                day += 1
-            elif sheet3.cell(row=month+3,column=day+1).value is None and day <=31:
-                day += 1
-            if day == 32:
-                day = 1
-                month += 1
-            if month == 6 and day == 1:
-                break
-        else:
-            if sheet3.cell(row=month+1,column=day+1).value is not None and day <= 31:
-                date_menu = [year, month, day]  # дата из календаря
-                dates_day_menu.setdefault(sheet3.cell(row=month+1,column=day+1).value, [])
-                date_of_month = datetime.date(*date_menu)
-                dates_day_menu[sheet3.cell(row=month+1,column=day+1).value].append(date_of_month.strftime("%Y-%m-%d"))
-                day += 1
-
-            elif sheet3.cell(row=month+1,column=day+1).value is None and day <=31:
-                day += 1
-            if day == 32:
-                day = 1
-                month += 1
-            if month == 13 and day == 1:
-                break
-    print(dates_day_menu)
+        if sheet3.cell(row=month + month_increase, column=day + 1).value is not None and sheet3.cell(row=month + month_increase, column=day + 1).value != 0 and day <= 31:
+            date_menu = [year, month, day]  # дата из календаря
+            dates_day_menu.setdefault(sheet3.cell(row=month + month_increase, column=day + 1).value, [])
+            date_of_month = datetime.date(*date_menu)
+            dates_day_menu[sheet3.cell(row=month + month_increase, column=day + 1).value].append(date_of_month.strftime("%Y-%m-%d"))
+            day += 1
+        elif sheet3.cell(row=month + month_increase, column=day + 1).value is None or sheet3.cell(row=month + month_increase, column=day + 1).value == 0 and day <= 31:
+            day += 1
+        if day == 32:
+            day = 1
+            month += 1
+        if month == 6 and day == 1 or month == 13 and day == 1:
+            break
+    # print(dates_day_menu)
+    # dates_day_menu = dict(sorted(dates_day_menu.items()))   # сортировка списка дней меню и соответствующих им дат
     workbook3.close()
 
 def cycle(row_of_sheet, sheet, sheet2):     # функция вставки ячеек в ежедневные меню
@@ -173,12 +169,13 @@ def cycle(row_of_sheet, sheet, sheet2):     # функция вставки яч
             row_of_sheet += 1
 
 def menu_creation_cycle(school_name, current_date, sheet):  # цикл записи ежедневных меню
+    global num_week_day
+    num_week_day = 6    # сброс начальной строки для определения недели и дня недели
+    counter_day = 0     # счетчик дней меню
     while True:
-        week = sheet.cell(row=num_week_day, column=1).value
-        day_of_week = sheet.cell(row=num_week_day, column=2).value
-        if current_date.isoweekday() == 6 and day_of_week != 6:  # если день выпадает на субботу
+        if current_date.isoweekday() == 6 and sheet.cell(row=num_week_day, column=2).value != 6:  # если день выпадает на субботу
             current_date += datetime.timedelta(2)
-        elif current_date.isoweekday() == 7 and day_of_week != 7:  # если день выпадает на воскресенье
+        elif current_date.isoweekday() == 7 and sheet.cell(row=num_week_day, column=2).value != 7:  # если день выпадает на воскресенье
             current_date += datetime.timedelta(1)
         workbook2 = load_workbook("files/shablon.xlsx")  # открытие шаблона
         sheet2 = workbook2.active  # выбор активного листа
@@ -188,7 +185,8 @@ def menu_creation_cycle(school_name, current_date, sheet):  # цикл запи�
         workbook2.save(
             f"{home_dir}/Desktop/Менюшки/{current_date.strftime("%Y-%m-%d")}-sm.xlsx")  # сохранение файла ежедневного меню
         current_date += datetime.timedelta(1)  # прибавление одних суток к дате
-        if week * day_of_week == 10:  # завершение цикла после десятого дня
+        counter_day += 1
+        if counter_day == how_day_menu:     # если счётчик дней равен количеству дней типового меню, то выйти из цикла
             break
 
 def menu_processing():
@@ -243,5 +241,3 @@ main_window()
 # slovarik[1].append('sthytu')
 # print(slovarik)
 # print(type(slovarik.get(1)[0]))
-
-
