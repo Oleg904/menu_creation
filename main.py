@@ -229,7 +229,7 @@ def menu_processing():
 
 main_window()
 
-
+#
 # import datetime
 # slovarik = {}
 # start_date = [2025, 4, 7]
@@ -239,5 +239,7 @@ main_window()
 # print(slovarik)
 # slovarik[1].append(date)
 # slovarik[1].append('sthytu')
+# slovarik[1].append('dsfghgdjfgjkfg')
 # print(slovarik)
-# print(type(slovarik.get(1)[0]))
+# del slovarik[1][1]
+# print(slovarik.get(1))
