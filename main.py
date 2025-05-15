@@ -86,14 +86,14 @@ def how_much_is_the_daily_menu(sheet):   # определение сколько
     global how_day_menu
     while True:
         while True:
-            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value > how_day_menu:
+            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value > how_day_menu:    # если ячейка не пустая и больше чем сохраненное значение сколькидневного меню, обновление сколькидневного меню
                 how_day_menu = sheet.cell(row=start_reding, column=read_column).value
-            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value < how_day_menu:
+            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value < how_day_menu:    # если ячейка не пустая и меньше чем сохраненное значение сколькидневного меню, завершение цикла
                 break
             if read_column == 32:
                 break
             read_column += 1
-        if start_reding == 13:
+        if start_reding == 13:  # если строка считывания в конце таблицы, то завершение цикла
             break
         start_reding += 1
         read_column = 2
@@ -104,27 +104,27 @@ def dates_menu(day, month, year):   # составление списка дне
     dates_day_menu = {}
     workbook3 = load_workbook(nutrition_calendar, read_only=True)
     sheet3 = workbook3.active
-    if month < 6:
+    if month < 6:   # если месяц утверждения меню меньше июня
         month_increase = 3
-    elif month > 6 and sheet3.cell(row=9,column=1).value == 'июнь':
+    elif month > 6 and sheet3.cell(row=9,column=1).value == 'июнь':     # если месяц утверждения июнь
         month_increase = 1
-    elif month > 6 and sheet3.cell(row=9,column=1).value != 'июнь' and month == 8:
+    elif month > 6 and sheet3.cell(row=9,column=1).value != 'июнь' and month == 8:  # если месяц утверждения больше июня
         month_increase = 0
         month = 9
         day = 1
     while True:
-        if sheet3.cell(row=month + month_increase, column=day + 1).value is not None and sheet3.cell(row=month + month_increase, column=day + 1).value != 0 and day <= 31:
+        if sheet3.cell(row=month + month_increase, column=day + 1).value is not None and sheet3.cell(row=month + month_increase, column=day + 1).value != 0 and day <= 31:  # если день не праздничный и невыходной или не проставлен 0, а также число не более 31
             date_menu = [year, month, day]  # дата из календаря
             dates_day_menu.setdefault(sheet3.cell(row=month + month_increase, column=day + 1).value, [])
             date_of_month = datetime.date(*date_menu)
             dates_day_menu[sheet3.cell(row=month + month_increase, column=day + 1).value].append(date_of_month.strftime("%Y-%m-%d"))
             day += 1
-        elif sheet3.cell(row=month + month_increase, column=day + 1).value is None or sheet3.cell(row=month + month_increase, column=day + 1).value == 0 and day <= 31:
+        elif sheet3.cell(row=month + month_increase, column=day + 1).value is None or sheet3.cell(row=month + month_increase, column=day + 1).value == 0 and day <= 31:     # если день праздничный, выходной или если проставлен 0, а также число не более 31
             day += 1
-        if day == 32:
+        if day == 32:   # если счетчик дней стал больше 31, то счётчик дней сбрасывается до 1, а месяц прибавляется на 1
             day = 1
             month += 1
-        if month == 6 and day == 1 or month == 13 and day == 1:
+        if month == 6 and day == 1 or month == 13 and day == 1:     # если конец учебного года либо конец календарного года, то цикл завершается
             break
     # print(dates_day_menu)
     # dates_day_menu = dict(sorted(dates_day_menu.items()))   # сортировка списка дней меню и соответствующих им дат
