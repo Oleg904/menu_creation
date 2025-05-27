@@ -27,20 +27,24 @@ def main_window():
     def open_file_calendar():   # открытие файла календаря питания
         global nutrition_calendar
         nutrition_calendar = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
+        if nutrition_calendar == '':
+            showinfo(title="Информация", message="Вы не выбрали календарь питания. Выберите его заново.")
+            return
+        print('1')
         workbook3 = load_workbook(nutrition_calendar, read_only=True)  # выбор календаря
         sheet3 = workbook3.active  # выбор активного листа в календаре
         how_much_is_the_daily_menu(sheet3)
         workbook3.close()
         if nutrition_calendar != '':
             showinfo(title="Информация", message="Теперь выберите типовое меню.")
-        else:
-            showinfo(title="Информация", message="Вы не выбрали календарь питания. Выберите его заново.")
 
     # открытие файла типового меню
     def open_file_menu():
         global file_menu
         file_menu = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
-        if nutrition_calendar == '':
+        if file_menu =='':
+            showinfo(title="Информация", message="Вы не выбрали файл типового меню, выберите его заново.")
+        elif nutrition_calendar == '':
             showinfo(title="Информация", message="Вы не выбрали календарь питания. Сначала выберите его, а затем заново файл типового меню.")
         else:
             menu_processing()
@@ -126,9 +130,9 @@ def dates_menu(day, month, year):   # составление списка дне
             month += 1
         if month == 6 and day == 1 or month == 13 and day == 1:     # если конец учебного года либо конец календарного года, то цикл завершается
             break
-    # print(dates_day_menu)
-    # dates_day_menu = dict(sorted(dates_day_menu.items()))   # сортировка списка дней меню и соответствующих им дат
+    dates_day_menu = dict(sorted(dates_day_menu.items()))   # сортировка списка дней меню и соответствующих им дат
     workbook3.close()
+    print(dates_day_menu)
 
 def cycle(row_of_sheet, sheet, sheet2):     # функция вставки ячеек в ежедневные меню
     row_day_menu = 4    # строка начала вставки в ежедневное меню
@@ -209,8 +213,6 @@ def menu_processing():
             menu_creation_cycle(school_name, current_date, sheet)
             workbook.close()
             showinfo(title="Информация", message="Файлы меню созданы. При необходимости, скорректируйте даты на ежедневных меню. Программу можно закрыть.")
-        elif file_menu == '':
-            showinfo(title="Информация", message="Вы не выбрали файл типового меню, выберите его снова.")
         else:
             showinfo(title="Информация", message="В папке содержатся старые файлы меню. Эти файлы будут перезаписаны.")
             shutil.rmtree(f"{home_dir}/Desktop/Менюшки")
