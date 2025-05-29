@@ -27,15 +27,17 @@ def main_window():
     def open_file_calendar():   # открытие файла календаря питания
         global nutrition_calendar
         nutrition_calendar = filedialog.askopenfilename(filetypes=(("EXCEL", ".xlsx"),))
-        if nutrition_calendar == '':
+        if nutrition_calendar == '':    # если окно выбора файла было просто закрыто
             showinfo(title="Информация", message="Вы не выбрали календарь питания. Выберите его заново.")
             return
-        print('1')
         workbook3 = load_workbook(nutrition_calendar, read_only=True)  # выбор календаря
         sheet3 = workbook3.active  # выбор активного листа в календаре
-        how_much_is_the_daily_menu(sheet3)
+        if type(sheet3.cell(row=1, column=12).value) != str or 'календарь питания' not in sheet3.cell(row=1, column=12).value.lower():     # проверка того, является ли выбранный файл календарём питания
+            showinfo(title="Информация", message="Вы выбрали неверный файл, заново выберите календарь питания")
+            return
+        # how_much_is_the_daily_menu(sheet3)
         workbook3.close()
-        if nutrition_calendar != '':
+        if nutrition_calendar != '':    # если файл календаря был выбран
             showinfo(title="Информация", message="Теперь выберите типовое меню.")
 
     # открытие файла типового меню
@@ -84,23 +86,24 @@ def main_window():
 
     root.mainloop()
 
-def how_much_is_the_daily_menu(sheet):   # определение сколько дней в меню
-    start_reding = 4  # строка начала считывания дней в календаре
-    read_column = 2 # столбец начала считывания
-    global how_day_menu
-    while True:
-        while True:
-            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value > how_day_menu:    # если ячейка не пустая и больше чем сохраненное значение сколькидневного меню, обновление сколькидневного меню
-                how_day_menu = sheet.cell(row=start_reding, column=read_column).value
-            if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value < how_day_menu:    # если ячейка не пустая и меньше чем сохраненное значение сколькидневного меню, завершение цикла
-                break
-            if read_column == 32:
-                break
-            read_column += 1
-        if start_reding == 13:  # если строка считывания в конце таблицы, то завершение цикла
-            break
-        start_reding += 1
-        read_column = 2
+# def how_much_is_the_daily_menu(sheet):   # определение сколько дней в меню
+#     start_reding = 4  # строка начала считывания дней в календаре
+#     read_column = 2 # столбец начала считывания
+#     global how_day_menu
+#     while True:
+#         while True:
+#             if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value > how_day_menu:    # если ячейка не пустая и больше чем сохраненное значение сколькидневного меню, обновление сколькидневного меню
+#                 how_day_menu = sheet.cell(row=start_reding, column=read_column).value
+#             if not sheet.cell(row=start_reding, column=read_column).value is None and sheet.cell(row=start_reding, column=read_column).value < how_day_menu:    # если ячейка не пустая и меньше чем сохраненное значение сколькидневного меню, завершение цикла
+#                 break
+#             if read_column == 32:
+#                 break
+#             read_column += 1
+#         if start_reding == 13:  # если строка считывания в конце таблицы, то завершение цикла
+#             print(how_day_menu)
+#             break
+#         start_reding += 1
+#         read_column = 2
 
 def dates_menu(day, month, year):   # составление списка дней меню с соответствующими им датами
     global dates_day_menu
@@ -133,6 +136,7 @@ def dates_menu(day, month, year):   # составление списка дне
     dates_day_menu = dict(sorted(dates_day_menu.items()))   # сортировка списка дней меню и соответствующих им дат
     workbook3.close()
     print(dates_day_menu)
+    print(type(list(dates_day_menu.items())[-1][0]))
 
 def cycle(row_of_sheet, sheet, sheet2):     # функция вставки ячеек в ежедневные меню
     row_day_menu = 4    # строка начала вставки в ежедневное меню
@@ -190,7 +194,7 @@ def menu_creation_cycle(school_name, current_date, sheet):  # цикл запи�
             f"{home_dir}/Desktop/Менюшки/{current_date.strftime("%Y-%m-%d")}-sm.xlsx")  # сохранение файла ежедневного меню
         current_date += datetime.timedelta(1)  # прибавление одних суток к дате
         counter_day += 1
-        if counter_day == how_day_menu:     # если счётчик дней равен количеству дней типового меню, то выйти из цикла
+        if counter_day == list(dates_day_menu.items())[-1][0]:     # если счётчик дней равен количеству дней типового меню, то выйти из цикла
             break
 
 
@@ -202,8 +206,10 @@ def menu_processing():
         if len(os.listdir(f"{home_dir}/Desktop/Менюшки")) == 0:
             workbook = load_workbook(file_menu, read_only=True)     # выбор файла типового меню
             sheet = workbook.active     # выбор активного листа
-            # наименование учреждения
-            school_name = sheet.cell(row=1,column=3).value
+            if type(sheet.cell(row=2, column=1).value) != str or 'типовое' not in sheet.cell(row=2, column=1).value.lower():  # проверка того, является ли выбранный файл календарём питания
+                showinfo(title="Информация", message="Вы выбрали неверный файл, заново выберите типовое меню")
+                return
+            school_name = sheet.cell(row=1,column=3).value  # наименование учреждения
             # составление даты начала
             start_date.append(sheet.cell(row=3,column=10).value)     # год
             start_date.append(sheet.cell(row=3,column=9).value)     # месяц
@@ -227,7 +233,6 @@ def menu_processing():
             workbook.close()
         else:
             showinfo(title="Информация", message=str(errors))
-
 
 
 main_window()
