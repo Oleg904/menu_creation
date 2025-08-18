@@ -173,7 +173,6 @@ def menu_creation_cycle(school_name, current_date, sheet):  # цикл запи�
         for dates in value:      # копирование текущего дня меню на соответствующие ему даты
             if datetime.datetime.strptime(dates, "%Y-%m-%d").date() == current_date:    # если текущее значение даты является первым в списке, то пропустить его, т.к. оно уже использовалось
                 continue
-            print(dates)
             shutil.copy(f"{home_dir}/Desktop/Менюшки/{current_date.strftime("%Y-%m-%d")}-sm.xlsx", f"{home_dir}/Desktop/Менюшки/{datetime.datetime.strptime(dates, "%Y-%m-%d").date().strftime("%Y-%m-%d")}-sm.xlsx")
 
 
